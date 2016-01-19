@@ -28,7 +28,7 @@ CSimpleBuffer::~CSimpleBuffer()
 		m_buffer = NULL;
 	}
 }
-
+//--> extend CSimpleBuffer more len and leave 1/4 free space
 void CSimpleBuffer::Extend(uint32_t len)
 {
 	m_alloc_size = m_write_offset + len;
@@ -36,7 +36,7 @@ void CSimpleBuffer::Extend(uint32_t len)
 	uchar_t* new_buf = (uchar_t*)realloc(m_buffer, m_alloc_size);
 	m_buffer = new_buf;
 }
-
+//--> add len long content to CSimpleBuffer
 uint32_t CSimpleBuffer::Write(void* buf, uint32_t len)
 {
 	if (m_write_offset + len > m_alloc_size)
@@ -53,7 +53,7 @@ uint32_t CSimpleBuffer::Write(void* buf, uint32_t len)
 
 	return len;
 }
-
+//--> read len long content to buf
 uint32_t CSimpleBuffer::Read(void* buf, uint32_t len)
 {
 	if (len > m_write_offset)
