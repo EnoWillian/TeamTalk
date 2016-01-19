@@ -15,6 +15,7 @@
 IpParser* pIpParser = NULL;
 string strMsfsUrl;
 string strDiscovery;//发现获取地址
+//--> insert pair(socket handle , conn object *) into grobal map
 void client_callback(void* callback_data, uint8_t msg, uint32_t handle, void* pParam)
 {
 	if (msg == NETLIB_MSG_CONNECT)
@@ -60,14 +61,15 @@ void http_callback(void* callback_data, uint8_t msg, uint32_t handle, void* pPar
 
 int main(int argc, char* argv[])
 {
+	//--> login_server -v 		show version info
 	if ((argc == 2) && (strcmp(argv[1], "-v") == 0)) {
 		printf("Server Version: LoginServer/%s\n", VERSION);
 		printf("Server Build: %s %s\n", __DATE__, __TIME__);
 		return 0;
 	}
-
+	//--> stop server to exit in case of revc a SIGPIPE signal (send msg to a shutdown socket) 
 	signal(SIGPIPE, SIG_IGN);
-
+	//--> read config parameter from config file
 	CConfigFileReader config_file("loginserver.conf");
 
     char* client_listen_ip = config_file.GetConfigName("ClientListenIP");
@@ -91,15 +93,17 @@ int main(int argc, char* argv[])
     strMsfsUrl = str_msfs_url;
     strDiscovery = str_discovery;
     
-    
+    //--> ?
     pIpParser = new IpParser();
     
 	int ret = netlib_init();
 
 	if (ret == NETLIB_ERROR)
 		return ret;
+	//--> we support multiple ip
 	CStrExplode client_listen_ip_list(client_listen_ip, ';');
 	for (uint32_t i = 0; i < client_listen_ip_list.GetItemCnt(); i++) {
+		//--> bind and listen to each ip:port
 		ret = netlib_listen(client_listen_ip_list.GetItem(i), client_port, client_callback, NULL);
 		if (ret == NETLIB_ERROR)
 			return ret;
@@ -122,13 +126,14 @@ int main(int argc, char* argv[])
 
 			printf("server start listen on:\nFor client %s:%d\nFor MsgServer: %s:%d\nFor http:%s:%d\n",
 			client_listen_ip, client_port, msg_server_listen_ip, msg_server_port, http_listen_ip, http_port);
+	//--> set login|http conn callback timer
 	init_login_conn();
     init_http_conn();
 
 	printf("now enter the event loop...\n");
-    
+    //--> write current server pid to file server.pid
     writePid();
-
+	//--> start dispatch
 	netlib_eventloop();
 
 	return 0;
