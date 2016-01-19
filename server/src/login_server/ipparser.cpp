@@ -19,7 +19,7 @@ IpParser::~IpParser()
 {
     
 }
-
+//--> check ip is not null and in the right format (xxx.xxx.xxx.xxx)
 bool IpParser::isTelcome(const char *pIp)
 {
     if(!pIp)
