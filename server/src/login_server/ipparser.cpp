@@ -20,6 +20,7 @@ IpParser::~IpParser()
     
 }
 //--> check ip is not null and in the right format (xxx.xxx.xxx.xxx)
+//--> no idea how it check whether ip is telecom or not 
 bool IpParser::isTelcome(const char *pIp)
 {
     if(!pIp)
