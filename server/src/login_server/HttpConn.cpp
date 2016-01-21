@@ -32,7 +32,7 @@ CHttpConn* FindHttpConnByHandle(uint32_t conn_handle)
 
     return pConn;
 }
-
+//--> take basesocket actions according to diff msgs
 void httpconn_callback(void* callback_data, uint8_t msg, uint32_t handle, uint32_t uParam, void* pParam)
 {
 	NOTUSED_ARG(uParam);
@@ -61,7 +61,7 @@ void httpconn_callback(void* callback_data, uint8_t msg, uint32_t handle, uint32
 		break;
 	}
 }
-
+//--> timely do ontimer()
 void http_conn_timer_callback(void* callback_data, uint8_t msg, uint32_t handle, void* pParam)
 {
 	CHttpConn* pConn = NULL;
@@ -140,7 +140,7 @@ void CHttpConn::Close()
 
     ReleaseRef();
 }
-
+//--> called when socket is connected, insert pair to g_http_conn_map, reset callback function to httpconn_callback()
 void CHttpConn::OnConnect(net_handle_t handle)
 {
     printf("OnConnect, handle=%d\n", handle);
@@ -152,9 +152,10 @@ void CHttpConn::OnConnect(net_handle_t handle)
     netlib_option(handle, NETLIB_OPT_SET_CALLBACK_DATA, reinterpret_cast<void *>(m_conn_handle) );
     netlib_option(handle, NETLIB_OPT_GET_REMOTE_IP, (void*)&m_peer_ip);
 }
-
+//--> read msg from socket then _HandleMsgServRequest()
 void CHttpConn::OnRead()
 {
+	//--> read msg from socket to m_in_buf
 	for (;;)
 	{
 		uint32_t free_buf_len = m_in_buf.GetAllocSize() - m_in_buf.GetWriteOffset();
@@ -200,9 +201,11 @@ void CHttpConn::OnRead()
 		}
 	}
 }
-
+//--> send m_out_buf to socket
 void CHttpConn::OnWrite()
 {
+	//--> busy --> buf not sent all
+	//--> free --> buf all sent
 	if (!m_busy)
 		return;
 
@@ -211,9 +214,9 @@ void CHttpConn::OnWrite()
 		ret = 0;
 
 	int out_buf_size = (int)m_out_buf.GetWriteOffset();
-
+	//remove sent content in buf
 	m_out_buf.Read(NULL, ret);
-
+	//--> not all sent
 	if (ret < out_buf_size)
 	{
 		m_busy = true;
@@ -230,7 +233,7 @@ void CHttpConn::OnClose()
 {
     Close();
 }
-
+//--> timely check timeout
 void CHttpConn::OnTimer(uint64_t curr_tick)
 {
 	if (curr_tick > m_last_recv_tick + HTTP_CONN_TIMEOUT) {
@@ -238,7 +241,7 @@ void CHttpConn::OnTimer(uint64_t curr_tick)
 		Close();
 	}
 }
-
+//--> according to msgserver status send diff msgs
 // Add By Lanhu 2014-12-19 通过登陆IP来优选电信还是联通IP
 void CHttpConn::_HandleMsgServRequest(string& url, string& post_data)
 {
