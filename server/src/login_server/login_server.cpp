@@ -15,7 +15,10 @@
 IpParser* pIpParser = NULL;
 string strMsfsUrl;
 string strDiscovery;//发现获取地址
-//--> insert pair(socket handle , conn object *) into grobal map
+//--> client callback is set when server-side socket listen to ip:port
+//--> this callback will be called and replaced by imconn_callback() in OnConnect2() when server-side socket accepts a connect request
+//--> result:	- add a loginconn for client in g_client_conn_map
+//-->			- set basesocket's callback function to imconn_callback, callback_data to g_client_conn_map
 void client_callback(void* callback_data, uint8_t msg, uint32_t handle, void* pParam)
 {
 	if (msg == NETLIB_MSG_CONNECT)
@@ -29,7 +32,10 @@ void client_callback(void* callback_data, uint8_t msg, uint32_t handle, void* pP
 	}
 }
 
-// this callback will be replaced by imconn_callback() in OnConnect()
+//--> msg server callback is set when server-side socket listen to ip:port
+//--> this callback will be called and replaced by imconn_callback() in OnConnect2() when server-side socket accepts a connect request
+//--> result:	- add a loginconn for msg server in g_msg_serv_conn_map
+//-->			- set basesocket's callback function to imconn_callback, callback_data to g_msg_serv_conn_map
 void msg_serv_callback(void* callback_data, uint8_t msg, uint32_t handle, void* pParam)
 {
     log("msg_server come in");
@@ -45,7 +51,10 @@ void msg_serv_callback(void* callback_data, uint8_t msg, uint32_t handle, void* 
 	}
 }
 
-
+//--> http callback is set when server-side socket listen to ip:port
+//--> this callback will be called and replaced by httpconn_callback() in OnConnect() when server-side socket accepts a connect request
+//--> result:	- add a httpconn for http in g_http_conn_map
+//-->			- set basesocket's callback function to httpconn_callback, callback_data to m_conn_handle,get remote ip to m_peer_ip
 void http_callback(void* callback_data, uint8_t msg, uint32_t handle, void* pParam)
 {
     if (msg == NETLIB_MSG_CONNECT)
@@ -93,7 +102,7 @@ int main(int argc, char* argv[])
     strMsfsUrl = str_msfs_url;
     strDiscovery = str_discovery;
     
-    //--> ?
+    //--> 
     pIpParser = new IpParser();
     
 	int ret = netlib_init();
@@ -103,7 +112,8 @@ int main(int argc, char* argv[])
 	//--> we support multiple ip
 	CStrExplode client_listen_ip_list(client_listen_ip, ';');
 	for (uint32_t i = 0; i < client_listen_ip_list.GetItemCnt(); i++) {
-		//--> bind and listen to each ip:port
+		//--> - for each ip:port, new a basesocket bind and listen to ; set callback and data; add basesocket to g_socket_map
+		//--> - add event to watch socket actions
 		ret = netlib_listen(client_listen_ip_list.GetItem(i), client_port, client_callback, NULL);
 		if (ret == NETLIB_ERROR)
 			return ret;
@@ -126,14 +136,14 @@ int main(int argc, char* argv[])
 
 			printf("server start listen on:\nFor client %s:%d\nFor MsgServer: %s:%d\nFor http:%s:%d\n",
 			client_listen_ip, client_port, msg_server_listen_ip, msg_server_port, http_listen_ip, http_port);
-	//--> set login|http conn callback timer
+	//--> set login|http conn callback timer for timely do OnTimer()
 	init_login_conn();
     init_http_conn();
 
 	printf("now enter the event loop...\n");
     //--> write current server pid to file server.pid
     writePid();
-	//--> start dispatch
+	//--> start dispatch: socket acts for diff perpose; checktimer checkloop
 	netlib_eventloop();
 
 	return 0;
