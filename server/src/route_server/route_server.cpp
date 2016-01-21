@@ -9,8 +9,8 @@
 #include "netlib.h"
 #include "ConfigFileReader.h"
 #include "version.h"
-
-// this callback will be replaced by imconn_callback() in OnConnect()
+//--> callback function for connect
+// this callback will be replaced by imconn_callback() in OnConnect(): reset callback func and add pair to conn_map
 void route_serv_callback(void* callback_data, uint8_t msg, uint32_t handle, void* pParam)
 {
 	if (msg == NETLIB_MSG_CONNECT)
@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 	}
 
 	printf("server start listen on: %s:%d\n", listen_ip,  listen_msg_port);
-
+	//--> set timer for route_serv_timer_callback
 	init_routeconn_timer_callback();
 
 	printf("now enter the event loop...\n");
