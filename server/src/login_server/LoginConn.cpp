@@ -15,7 +15,7 @@ static ConnMap_t g_client_conn_map;
 static ConnMap_t g_msg_serv_conn_map;
 static uint32_t g_total_online_user_cnt = 0;	// 并发在线总人数
 map<uint32_t, msg_serv_info_t*> g_msg_serv_info;
-
+//--> foreach conn in conn_map do OnTimer() : process timeout or send heartbeat msg
 void login_conn_timer_callback(void* callback_data, uint8_t msg, uint32_t handle, void* pParam)
 {
 	uint64_t cur_time = get_tick_count();
@@ -74,7 +74,7 @@ void CLoginConn::Close()
 
 	ReleaseRef();
 }
-
+//--> insert pair into conn_map and reset basesock's callback function and data
 void CLoginConn::OnConnect2(net_handle_t handle, int conn_type)
 {
 	m_handle = handle;
@@ -94,7 +94,7 @@ void CLoginConn::OnClose()
 {
 	Close();
 }
-
+//--> on timer : check timeout or send heartbeat msg
 void CLoginConn::OnTimer(uint64_t curr_tick)
 {
 	if (m_conn_type == LOGIN_CONN_TYPE_CLIENT) {
@@ -117,7 +117,7 @@ void CLoginConn::OnTimer(uint64_t curr_tick)
 		}
 	}
 }
-
+//--> according pdu's commandid handle pdu
 void CLoginConn::HandlePdu(CImPdu* pPdu)
 {
 	switch (pPdu->GetCommandId()) {
@@ -138,7 +138,7 @@ void CLoginConn::HandlePdu(CImPdu* pPdu)
             break;
 	}
 }
-
+//--> insert msg server info from pdu to g_msg_serv_info
 void CLoginConn::_HandleMsgServInfo(CImPdu* pPdu)
 {
 	msg_serv_info_t* pMsgServInfo = new msg_serv_info_t;
@@ -160,7 +160,7 @@ void CLoginConn::_HandleMsgServInfo(CImPdu* pPdu)
 		pMsgServInfo->ip_addr1.c_str(), pMsgServInfo->ip_addr2.c_str(), pMsgServInfo->port,pMsgServInfo->max_conn_cnt,
 		pMsgServInfo->cur_conn_cnt, pMsgServInfo->hostname.c_str());
 }
-
+//--> update msg server info item according to pdu's user_action
 void CLoginConn::_HandleUserCntUpdate(CImPdu* pPdu)
 {
 	map<uint32_t, msg_serv_info_t*>::iterator it = g_msg_serv_info.find(m_handle);
@@ -182,7 +182,7 @@ void CLoginConn::_HandleUserCntUpdate(CImPdu* pPdu)
             pMsgServInfo->port, pMsgServInfo->cur_conn_cnt, g_total_online_user_cnt);
 	}
 }
-
+//--> request msg server ; send pdu's content socket for ack
 void CLoginConn::_HandleMsgServRequest(CImPdu* pPdu)
 {
     IM::Login::IMMsgServReq msg;
