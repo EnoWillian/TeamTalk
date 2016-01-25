@@ -121,7 +121,7 @@ void CRouteConn::OnTimer(uint64_t curr_tick)
 		Close();
 	}
 }
-
+//--> called in imconn OnRead()
 void CRouteConn::HandlePdu(CImPdu* pPdu)
 {
 	switch (pPdu->GetCommandId()) {
