@@ -9,7 +9,7 @@
 
 //static uint64_t g_send_pkt_cnt = 0;		// 发送数据包总数
 //static uint64_t g_recv_pkt_cnt = 0;		// 接收数据包总数
-
+//--> return the imconn pointer of given handle
 static CImConn* FindImConn(ConnMap_t* imconn_map, net_handle_t handle)
 {
 	CImConn* pConn = NULL;
@@ -22,7 +22,7 @@ static CImConn* FindImConn(ConnMap_t* imconn_map, net_handle_t handle)
 
 	return pConn;
 }
-
+//--> for given msg, exec OnXxx() of imconn found by handle
 void imconn_callback(void* callback_data, uint8_t msg, uint32_t handle, void* pParam)
 {
 	NOTUSED_ARG(handle);
@@ -76,18 +76,18 @@ CImConn::~CImConn()
 {
 	//log("CImConn::~CImConn, handle=%d ", m_handle);
 }
-
+//--> send data to socket or write data to buf if busy
 int CImConn::Send(void* data, int len)
 {
 	m_last_send_tick = get_tick_count();
 //	++g_send_pkt_cnt;
-
+	//--> if busy which means we have data not be sent yet, so we just put new data into buf
 	if (m_busy)
 	{
 		m_out_buf.Write(data, len);
 		return len;
 	}
-
+	//--> if not busy, send data through handle's basesocket
 	int offset = 0;
 	int remain = len;
 	while (remain > 0) {
@@ -105,7 +105,7 @@ int CImConn::Send(void* data, int len)
 		offset += ret;
 		remain -= ret;
 	}
-
+	//--> if ret <= 0 which means send failed, than we put remain data into buf
 	if (remain > 0)
 	{
 		m_out_buf.Write((char*)data + offset, remain);
@@ -119,7 +119,7 @@ int CImConn::Send(void* data, int len)
 
 	return len;
 }
-
+//--> recv from socket and put into in_buf, read pdu from buf and handle it in handlePdu
 void CImConn::OnRead()
 {
 	for (;;)
@@ -162,7 +162,7 @@ void CImConn::OnRead()
         OnClose();
 	}
 }
-
+//--> if busy, write out_buf's data to socket
 void CImConn::OnWrite()
 {
 	if (!m_busy)
