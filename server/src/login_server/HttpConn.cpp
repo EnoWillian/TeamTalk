@@ -32,7 +32,7 @@ CHttpConn* FindHttpConnByHandle(uint32_t conn_handle)
 
     return pConn;
 }
-//--> take basesocket actions according to diff msgs
+//--> take basesocket's actions according to diff msgs
 void httpconn_callback(void* callback_data, uint8_t msg, uint32_t handle, uint32_t uParam, void* pParam)
 {
 	NOTUSED_ARG(uParam);
@@ -152,7 +152,7 @@ void CHttpConn::OnConnect(net_handle_t handle)
     netlib_option(handle, NETLIB_OPT_SET_CALLBACK_DATA, reinterpret_cast<void *>(m_conn_handle) );
     netlib_option(handle, NETLIB_OPT_GET_REMOTE_IP, (void*)&m_peer_ip);
 }
-//--> read msg from socket then _HandleMsgServRequest()
+//--> read msg from socket then _HandleMsgServRequest() if url is msg_server
 void CHttpConn::OnRead()
 {
 	//--> read msg from socket to m_in_buf
@@ -253,7 +253,7 @@ void CHttpConn::_HandleMsgServRequest(string& url, string& post_data)
     {
         Json::Value value;
         value["code"] = 1;
-        value["msg"] = "没有msg_server";
+        value["msg"] = "no msg_server available";
         string strContent = value.toStyledString();
         char* szContent = new char[HTTP_RESPONSE_HTML_MAX];
         snprintf(szContent, HTTP_RESPONSE_HTML_MAX, HTTP_RESPONSE_HTML, strContent.length(), strContent.c_str());
@@ -275,7 +275,7 @@ void CHttpConn::_HandleMsgServRequest(string& url, string& post_data)
         log("All TCP MsgServer are full ");
         Json::Value value;
         value["code"] = 2;
-        value["msg"] = "负载过高";
+        value["msg"] = "full load";
         string strContent = value.toStyledString();
         char* szContent = new char[HTTP_RESPONSE_HTML_MAX];
         snprintf(szContent, HTTP_RESPONSE_HTML_MAX, HTTP_RESPONSE_HTML, strContent.length(), strContent.c_str());
