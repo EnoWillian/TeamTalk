@@ -312,16 +312,17 @@ void CRouteConn::_HandleUsersStatusRequest(CImPdu* pPdu)
 /*
  * update user status info, the logic seems complex
  */
+ //--> update client_type_list and routeConnSet of user_id's UserInfo in this routeServer according to status and client_type
 void CRouteConn::_UpdateUserStatus(uint32_t user_id, uint32_t status, uint32_t client_type)
 {
     CUserInfo* pUser = GetUserInfo(user_id);
-    if (pUser) {
-        if (pUser->FindRouteConn(this))
+    if (pUser) {//--> the user is in current RouteServer 
+        if (pUser->FindRouteConn(this))//--> if User's info contains routeServer
         {
             if (status == USER_STATUS_OFFLINE)
             {
                 pUser->RemoveClientType(client_type);
-                if (pUser->IsMsgConnNULL())
+                if (pUser->IsMsgConnNULL())//--> if user has no client connect to this routeServer then delete it
                 {
                     pUser->RemoveRouteConn(this);
                     if (pUser->GetRouteConnCount() == 0) {
@@ -336,7 +337,7 @@ void CRouteConn::_UpdateUserStatus(uint32_t user_id, uint32_t status, uint32_t c
                 pUser->AddClientType(client_type);
             }
         }
-        else
+        else//--> routeServer is not in User's info 
         {
             if (status != USER_STATUS_OFFLINE)
             {
@@ -345,9 +346,9 @@ void CRouteConn::_UpdateUserStatus(uint32_t user_id, uint32_t status, uint32_t c
             }
         }
     }
-    else
+    else//--> user not found in this routeServer
     {
-        if (status != USER_STATUS_OFFLINE) {
+        if (status != USER_STATUS_OFFLINE) {//--> new a UserInfo in current routeServer if client is online 
             CUserInfo* pUserInfo = new CUserInfo();
             if (pUserInfo != NULL) {
                 pUserInfo->AddRouteConn(this);
