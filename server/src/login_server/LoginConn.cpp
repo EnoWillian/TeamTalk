@@ -123,13 +123,13 @@ void CLoginConn::HandlePdu(CImPdu* pPdu)
 	switch (pPdu->GetCommandId()) {
         case CID_OTHER_HEARTBEAT:
             break;
-        case CID_OTHER_MSG_SERV_INFO:
+        case CID_OTHER_MSG_SERV_INFO://--> add new msg server
             _HandleMsgServInfo(pPdu);
             break;
-        case CID_OTHER_USER_CNT_UPDATE:
+        case CID_OTHER_USER_CNT_UPDATE://--> update msg server's info
             _HandleUserCntUpdate(pPdu);
             break;
-        case CID_LOGIN_REQ_MSGSERVER:
+        case CID_LOGIN_REQ_MSGSERVER://--> return msg_server info eg:ip:port for requester
             _HandleMsgServRequest(pPdu);
             break;
 
