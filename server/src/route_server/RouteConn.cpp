@@ -18,8 +18,12 @@
 using namespace IM::BaseDefine;
 
 //typedef hash_map<uint32_t /* user_id */, UserStat_t> UserStatMap_t;
+//--> global hash-map : net_handle --> CImConn
+//--> net_handle is socket handle between routeServer and a msgServer
+//--> CRouteConn is a connection used to handle msg between routeServer and a msgServer
 static ConnMap_t g_route_conn_map;
 typedef hash_map<uint32_t, CUserInfo*> UserInfoMap_t;
+//--> global hash-map : user_id --> CUserInfo
 static UserInfoMap_t g_user_map;
 
 CUserInfo* GetUserInfo(uint32_t user_id)
