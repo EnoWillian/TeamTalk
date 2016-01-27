@@ -72,7 +72,7 @@ uint32_t CUserInfo::GetCountByClientType(uint32_t client_type)
         return 0;
     }
 }
-
+//--> no client connect to msg
 bool CUserInfo::IsMsgConnNULL()
 {
     if (m_ClientTypeList.size() == 0) {
@@ -120,7 +120,7 @@ bool CUserInfo::IsMobileClientLogin()
     }
     return bRet;
 }
-
+//--> return status ONLINE if has a pc type client
 uint32_t CUserInfo::GetStatus()
 {
     uint32_t status = USER_STATUS_OFFLINE;
