@@ -158,7 +158,7 @@ void CRouteConn::HandlePdu(CImPdu* pPdu)
 		break;
 	}
 }
-
+//--> update online users's status
 void CRouteConn::_HandleOnlineUserInfo(CImPdu* pPdu)
 {
     IM::Server::IMOnlineUserInfo msg;
@@ -173,7 +173,7 @@ void CRouteConn::_HandleOnlineUserInfo(CImPdu* pPdu)
 		_UpdateUserStatus(server_user_stat.user_id(), server_user_stat.status(), server_user_stat.client_type());
 	}
 }
-
+//--> update one user's status 
 void CRouteConn::_HandleUserStatusUpdate(CImPdu* pPdu)
 {
     IM::Server::IMUserStatusUpdate msg;
@@ -362,7 +362,7 @@ void CRouteConn::_UpdateUserStatus(uint32_t user_id, uint32_t status, uint32_t c
         }
     }
 }
-
+//--> send pdu to all routeConn except pFromConn
 void CRouteConn::_BroadcastMsg(CImPdu* pPdu, CRouteConn* pFromConn)
 {
 	ConnMap_t::iterator it;
