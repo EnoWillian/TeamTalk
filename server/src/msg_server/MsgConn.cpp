@@ -387,7 +387,7 @@ void CMsgConn::HandlePdu(CImPdu* pPdu)
 
 void CMsgConn::_HandleHeartBeat(CImPdu *pPdu)
 {
-    //响应
+    //--> send pdu back for ack
     SendPdu(pPdu);
 }
 
@@ -494,7 +494,7 @@ void CMsgConn::_HandleLoginOutRequest(CImPdu *pPdu)
     SendPdu(&pdu2);
     Close();
 }
-
+//--> mobile client kick off pc client
 void CMsgConn::_HandleKickPCClient(CImPdu *pPdu)
 {
     IM::Login::IMKickPCClientReq msg;
@@ -512,7 +512,7 @@ void CMsgConn::_HandleKickPCClient(CImPdu *pPdu)
     {
         pImUser->KickOutSameClientType(CLIENT_TYPE_MAC, IM::BaseDefine::KICK_REASON_MOBILE_KICK,this);
     }
-    
+    //--> send CID_OTHER_SERVER_KICK_USER to all other msg server
     CRouteServConn* pRouteConn = get_route_serv_conn();
     if (pRouteConn) {
         IM::Server::IMServerKickUser msg2;
@@ -525,7 +525,7 @@ void CMsgConn::_HandleKickPCClient(CImPdu *pPdu)
         pdu.SetCommandId(CID_OTHER_SERVER_KICK_USER);
         pRouteConn->SendPdu(&pdu);
     }
-    
+    //--> send CID_LOGIN_RES_KICKPCCLIENT to client
     IM::Login::IMKickPCClientRsp msg2;
     msg2.set_user_id(user_id);
     msg2.set_result_code(0);
