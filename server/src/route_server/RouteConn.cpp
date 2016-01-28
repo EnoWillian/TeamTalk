@@ -162,7 +162,7 @@ void CRouteConn::HandlePdu(CImPdu* pPdu)
 		break;
 	}
 }
-//--> update online users's status
+//--> update online users's UserInfo status
 void CRouteConn::_HandleOnlineUserInfo(CImPdu* pPdu)
 {
     IM::Server::IMOnlineUserInfo msg;
@@ -177,7 +177,7 @@ void CRouteConn::_HandleOnlineUserInfo(CImPdu* pPdu)
 		_UpdateUserStatus(server_user_stat.user_id(), server_user_stat.status(), server_user_stat.client_type());
 	}
 }
-//--> update one user's status 
+//--> update one user about different client-type login status 
 void CRouteConn::_HandleUserStatusUpdate(CImPdu* pPdu)
 {
     IM::Server::IMUserStatusUpdate msg;
@@ -189,7 +189,8 @@ void CRouteConn::_HandleUserStatusUpdate(CImPdu* pPdu)
 	log("HandleUserStatusUpdate, status=%u, uid=%u, client_type=%u ", user_status, user_id, client_type);
 
 	_UpdateUserStatus(user_id, user_status, client_type);
-    
+    //--> if pc client to logout and no pc client exists, then broadMsg CID_OTHER_LOGIN_STATUS_NOTIFY
+    //--> or if online pc client exists, then broadMsg CID_OTHER_LOGIN_STATUS_NOTIFY when any client login
     //用于通知客户端,同一用户在pc端的登录情况
     CUserInfo* pUser = GetUserInfo(user_id);
     if (pUser)
@@ -226,7 +227,7 @@ void CRouteConn::_HandleUserStatusUpdate(CImPdu* pPdu)
             }
         }
     }
-    
+    //--> pc client to logout or pc client user not exists then broadMsg CID_BUDDY_LIST_STATUS_NOTIFY
     //状态更新的是pc client端，则通知给所有其他人
     if (CHECK_CLIENT_TYPE_PC(client_type))
     {
@@ -259,7 +260,7 @@ void CRouteConn::_HandleUserStatusUpdate(CImPdu* pPdu)
         }
     }
 }
-
+//--> set current routeConn's role(master)
 void CRouteConn::_HandleRoleSet(CImPdu* pPdu)
 {
     IM::Server::IMRoleSet msg;
@@ -274,7 +275,7 @@ void CRouteConn::_HandleRoleSet(CImPdu* pPdu)
 		m_bMaster = false;
 	}
 }
-
+//--> respone for request users's status
 void CRouteConn::_HandleUsersStatusRequest(CImPdu* pPdu)
 {
     IM::Buddy::IMUsersStatReq msg;
@@ -316,7 +317,7 @@ void CRouteConn::_HandleUsersStatusRequest(CImPdu* pPdu)
 /*
  * update user status info, the logic seems complex
  */
- //--> update client_type_list and routeConnSet of user_id's UserInfo in this routeServer according to status and client_type
+ //--> update client_type_list and routeConnSet of user_id's UserInfo in this routeConn according to status and client_type
 void CRouteConn::_UpdateUserStatus(uint32_t user_id, uint32_t status, uint32_t client_type)
 {
     CUserInfo* pUser = GetUserInfo(user_id);
@@ -366,7 +367,7 @@ void CRouteConn::_UpdateUserStatus(uint32_t user_id, uint32_t status, uint32_t c
         }
     }
 }
-//--> send pdu to all routeConn except pFromConn
+//--> send pdu to all routeConn's msgServer except pFromConn's
 void CRouteConn::_BroadcastMsg(CImPdu* pPdu, CRouteConn* pFromConn)
 {
 	ConnMap_t::iterator it;
@@ -378,7 +379,7 @@ void CRouteConn::_BroadcastMsg(CImPdu* pPdu, CRouteConn* pFromConn)
 	}
 }
 
-
+//--> send pdu to all msgServer which contains current user
 void CRouteConn::_SendPduToUser(uint32_t user_id, CImPdu* pPdu, bool bAll)
 {
     CUserInfo* pUser = GetUserInfo(user_id);
