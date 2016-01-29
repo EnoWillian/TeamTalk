@@ -155,7 +155,7 @@ bool CImPdu::IsPduAvailable(uchar_t* buf, uint32_t len, uint32_t& pdu_len)
 
 	return true;
 }
-//--> before set pdu with msg, u need header is set.
+//--> before set pdu with msg, u need header set.
 void CImPdu::SetPBMsg(const google::protobuf::MessageLite* msg)
 {
     //设置包体，则需要重置下空间
