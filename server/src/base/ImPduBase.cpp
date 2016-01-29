@@ -41,7 +41,7 @@ uint32_t CImPdu::GetBodyLength()
     body_length = m_buf.GetWriteOffset() - sizeof(PduHeader_t);
     return body_length;
 }
-
+//--> write pdu's header status into internal buf
 void CImPdu::WriteHeader()
 {
 	uchar_t* buf = GetBuffer();
@@ -96,7 +96,7 @@ void CImPdu::SetReversed(uint32_t reversed)
     uchar_t* buf = GetBuffer();
     CByteStream::WriteUint16(buf+14, reversed);
 }
-
+//--> read pdu's head from buf
 int CImPdu::ReadPduHeader(uchar_t* buf, uint32_t len)
 {
 	int ret = -1;
@@ -116,7 +116,7 @@ int CImPdu::ReadPduHeader(uchar_t* buf, uint32_t len)
 
 	return ret;
 }
-
+//--> read pdu from buf : 1. write data to internal buf 2. set header from buf
 CImPdu* CImPdu::ReadPdu(uchar_t *buf, uint32_t len)
 {
 	uint32_t pdu_len = 0;
@@ -130,12 +130,12 @@ CImPdu* CImPdu::ReadPdu(uchar_t *buf, uint32_t len)
     pPdu = new CImPdu();
     //pPdu->_SetIncomingLen(pdu_len);
     //pPdu->_SetIncomingBuf(buf);
-    pPdu->Write(buf, pdu_len);
+    pPdu->Write(buf, pdu_len);//--> write data from buf to internal buf
     pPdu->ReadPduHeader(buf, IM_PDU_HEADER_LEN);
     
     return pPdu;
 }
-
+//--> check whether buf len is legal ; read pdu'len into pdu_len
 bool CImPdu::IsPduAvailable(uchar_t* buf, uint32_t len, uint32_t& pdu_len)
 {
 	if (len < IM_PDU_HEADER_LEN)
@@ -155,12 +155,12 @@ bool CImPdu::IsPduAvailable(uchar_t* buf, uint32_t len, uint32_t& pdu_len)
 
 	return true;
 }
-
+//--> before set pdu with msg, u need header is set.
 void CImPdu::SetPBMsg(const google::protobuf::MessageLite* msg)
 {
     //设置包体，则需要重置下空间
     m_buf.Read(NULL, m_buf.GetWriteOffset());
-    m_buf.Write(NULL, sizeof(PduHeader_t));
+    m_buf.Write(NULL, sizeof(PduHeader_t));//--> alloc header space
     uint32_t msg_size = msg->ByteSize();
     uchar_t* szData = new uchar_t[msg_size];
     //ALLOC_FAIL_ASSERT(szData)
@@ -169,8 +169,8 @@ void CImPdu::SetPBMsg(const google::protobuf::MessageLite* msg)
         log("pb msg miss required fields.");
     }
     
-    m_buf.Write(szData, msg_size);
+    m_buf.Write(szData, msg_size);//--> write data to internal buf
     delete []szData;
-    WriteHeader();
+    WriteHeader();//--> write header to internal buf
 }
 
