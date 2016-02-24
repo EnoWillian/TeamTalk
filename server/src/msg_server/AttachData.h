@@ -17,11 +17,20 @@ enum {
     ATTACH_TYPE_PDU_FOR_PUSH = 4,
     ATTACH_TYPE_HANDLE_AND_PDU_FOR_FILE = 5,
 };
-
+/**
+ * how it works:
+ * 1. CxxAttachData(type,handle,...) : write to CxxAttachData src.m_buf which is a simplebuffer
+ * 2. src is attached to a msg and sent out
+ * 3. CxxAttachData(buf,len) : buf = msg.attachdata, len = msg.attachdata.length
+ *    parse msg.attachdata to CxxAttachData des.m_xxx
+ * 4. use des.m_xxx to do sth 
+ */
 class CDbAttachData
 {
 public:
+	//--> write type, handle, service_type to m_buf
 	CDbAttachData(uint32_t type, uint32_t handle, uint32_t service_type = 0);				// 序列化
+	//--> parse buf to m_xxx except m_buf
 	CDbAttachData(uchar_t* attach_data, uint32_t attach_len);	// 反序列化
 	virtual ~CDbAttachData() {}
 
@@ -40,7 +49,9 @@ private:
 class CPduAttachData
 {
 public:
+	//--> write parameter data to m_buf
 	CPduAttachData(uint32_t type, uint32_t handle, uint32_t pduLength, uchar_t* pdu, uint32_t service_type = 0);				// 序列化
+	//--> parse buf to fill m_xxx except m_buf
 	CPduAttachData(uchar_t* attach_data, uint32_t attach_len);	// 反序列化
 	virtual ~CPduAttachData() {}
     
