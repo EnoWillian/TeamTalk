@@ -28,7 +28,7 @@ CImUser::~CImUser()
 {
     //log("~ImUser, userId=%u\n", m_user_id);
 }
-
+//--> Get UnValidateMsgConn of handle from m_unvalidate_conn_set
 CMsgConn* CImUser::GetUnValidateMsgConn(uint32_t handle)
 {
     for (set<CMsgConn*>::iterator it = m_unvalidate_conn_set.begin(); it != m_unvalidate_conn_set.end(); it++)
@@ -41,7 +41,7 @@ CMsgConn* CImUser::GetUnValidateMsgConn(uint32_t handle)
     
     return NULL;
 }
-
+//--> Get MsgConn of handle from m_conn_map
 CMsgConn* CImUser::GetMsgConn(uint32_t handle)
 {
     CMsgConn* pMsgConn = NULL;
@@ -51,14 +51,14 @@ CMsgConn* CImUser::GetMsgConn(uint32_t handle)
     }
     return pMsgConn;
 }
-
+//--> validate msgconn which means add the unvalidatemsgconn to msgconn_map
 void CImUser::ValidateMsgConn(uint32_t handle, CMsgConn* pMsgConn)
 {
-    AddMsgConn(handle, pMsgConn);
-    DelUnValidateMsgConn(pMsgConn);
+    AddMsgConn(handle, pMsgConn);//--> add msg conn to m_conn_map
+    DelUnValidateMsgConn(pMsgConn);//--> delete msgconn from UnValidateMsgConn
 }
 
-
+//--> get opened user conn cnt from m_conn_map, return cnt and user_id struct
 user_conn_t CImUser::GetUserConn()
 {
     uint32_t conn_cnt = 0;
@@ -73,7 +73,7 @@ user_conn_t CImUser::GetUserConn()
     user_conn_t user_cnt = {m_user_id, conn_cnt};
     return user_cnt;
 }
-
+//--> broad pdu to all msgcon except pFromConn
 void CImUser::BroadcastPdu(CImPdu* pPdu, CMsgConn* pFromConn)
 {
     for (map<uint32_t, CMsgConn*>::iterator it = m_conn_map.begin(); it != m_conn_map.end(); it++)
@@ -84,7 +84,7 @@ void CImUser::BroadcastPdu(CImPdu* pPdu, CMsgConn* pFromConn)
         }
     }
 }
-
+//--> broad pdu to all msgcon which type is pc except pFromConn
 void CImUser::BroadcastPduWithOutMobile(CImPdu *pPdu, CMsgConn* pFromConn)
 {
     for (map<uint32_t, CMsgConn*>::iterator it = m_conn_map.begin(); it != m_conn_map.end(); it++)
@@ -95,7 +95,7 @@ void CImUser::BroadcastPduWithOutMobile(CImPdu *pPdu, CMsgConn* pFromConn)
         }
     }
 }
-
+//--> broad pdu to all msgcon which type is mobile except pFromConn
 void CImUser::BroadcastPduToMobile(CImPdu* pPdu, CMsgConn* pFromConn)
 {
     for (map<uint32_t, CMsgConn*>::iterator it = m_conn_map.begin(); it != m_conn_map.end(); it++)
@@ -107,7 +107,7 @@ void CImUser::BroadcastPduToMobile(CImPdu* pPdu, CMsgConn* pFromConn)
     }
 }
 
-
+//--> broad pdu to all msgcon except pFromConn and add msg_id,from_id to send list
 void CImUser::BroadcastClientMsgData(CImPdu* pPdu, uint32_t msg_id, CMsgConn* pFromConn, uint32_t from_id)
 {
     for (map<uint32_t, CMsgConn*>::iterator it = m_conn_map.begin(); it != m_conn_map.end(); it++)
@@ -119,7 +119,7 @@ void CImUser::BroadcastClientMsgData(CImPdu* pPdu, uint32_t msg_id, CMsgConn* pF
         }
     }
 }
-
+//--> broad data to all msgcon except pFromConn
 void CImUser::BroadcastData(void *buff, uint32_t len, CMsgConn* pFromConn)
 {
     if(!buff)
@@ -136,7 +136,7 @@ void CImUser::BroadcastData(void *buff, uint32_t len, CMsgConn* pFromConn)
         }
     }
 }
-
+//--> if find pconn in m_conn_map than set pdu msg and sendpdf from pConn and setkickoff
 void CImUser::HandleKickUser(CMsgConn* pConn, uint32_t reason)
 {
     map<uint32_t, CMsgConn*>::iterator it = m_conn_map.find(pConn->GetHandle());
@@ -159,6 +159,7 @@ void CImUser::HandleKickUser(CMsgConn* pConn, uint32_t reason)
 }
 
 // 只支持一个WINDOWS/MAC客户端登陆,或者一个ios/android登录
+//--> kick out same clienttype's pconn
 bool CImUser::KickOutSameClientType(uint32_t client_type, uint32_t reason, CMsgConn* pFromConn)
 {
     for (map<uint32_t, CMsgConn*>::iterator it = m_conn_map.begin(); it != m_conn_map.end(); it++)
@@ -173,7 +174,8 @@ bool CImUser::KickOutSameClientType(uint32_t client_type, uint32_t reason, CMsgC
     }
     return true;
 }
-
+//--> get client type flag of all conn_map
+//--> this flag means what type client logined in
 uint32_t CImUser::GetClientTypeFlag()
 {
     uint32_t client_type_flag = 0x00;
@@ -206,7 +208,7 @@ CImUserManager* CImUserManager::GetInstance()
     return &s_manager;
 }
 
-
+//--> get imuser of name from m_im_user_map_by_name
 CImUser* CImUserManager::GetImUserByLoginName(string login_name)
 {
     CImUser* pUser = NULL;
@@ -216,7 +218,7 @@ CImUser* CImUserManager::GetImUserByLoginName(string login_name)
     }
     return pUser;
 }
-
+//--> get imuser of user_id from m_im_user_map
 CImUser* CImUserManager::GetImUserById(uint32_t user_id)
 {
     CImUser* pUser = NULL;
@@ -226,7 +228,7 @@ CImUser* CImUserManager::GetImUserById(uint32_t user_id)
     }
     return pUser;
 }
-
+//--> get msgconn by handle of userid's user
 CMsgConn* CImUserManager::GetMsgConnByHandle(uint32_t user_id, uint32_t handle)
 {
     CMsgConn* pMsgConn = NULL;
@@ -236,7 +238,7 @@ CMsgConn* CImUserManager::GetMsgConnByHandle(uint32_t user_id, uint32_t handle)
     }
     return pMsgConn;
 }
-
+//--> add imuser,login_name to m_im_user_map_by_name
 bool CImUserManager::AddImUserByLoginName(string login_name, CImUser *pUser)
 {
     bool bRet = false;
@@ -276,7 +278,7 @@ void CImUserManager::RemoveImUser(CImUser *pUser)
         pUser = NULL;
     }
 }
-
+//--> clear m_im_user_map_by_name and m_im_user_map and free all pusers
 void CImUserManager::RemoveAll()
 {
     for (ImUserMapByName_t::iterator it = m_im_user_map_by_name.begin(); it != m_im_user_map_by_name.end();
@@ -291,7 +293,7 @@ void CImUserManager::RemoveAll()
     m_im_user_map_by_name.clear();
     m_im_user_map.clear();
 }
-
+//--> add all validate imuser's all opened msgconn's onlinestatus into online_user_info
 void CImUserManager::GetOnlineUserInfo(list<user_stat_t>* online_user_info)
 {
     user_stat_t status;
@@ -314,7 +316,7 @@ void CImUserManager::GetOnlineUserInfo(list<user_stat_t>* online_user_info)
         }
     }
 }
-
+//--> total userconn cnt of all validate imuser of m_im_user_map and add user_conn_cnt to user_conn_list
 void CImUserManager::GetUserConnCnt(list<user_conn_t>* user_conn_list, uint32_t& total_conn_cnt)
 {
     total_conn_cnt = 0;
@@ -330,7 +332,7 @@ void CImUserManager::GetUserConnCnt(list<user_conn_t>* user_conn_list, uint32_t&
         }
     }
 }
-
+//--> broad pdu to all validate imuser's msgconn pc, mobile or both client type according client_type_flag
 void CImUserManager::BroadcastPdu(CImPdu* pdu, uint32_t client_type_flag)
 {
     CImUser* pImUser = NULL;
