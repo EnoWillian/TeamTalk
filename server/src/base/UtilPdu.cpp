@@ -10,10 +10,10 @@
 #include <string.h>
 
 ///////////// CSimpleBuffer ////////////////
+//--> write to buf's end and read from buf's head
 CSimpleBuffer::CSimpleBuffer()
 {
 	m_buffer = NULL;
-
 	m_alloc_size = 0;
 	m_write_offset = 0;
 }
@@ -28,7 +28,7 @@ CSimpleBuffer::~CSimpleBuffer()
 		m_buffer = NULL;
 	}
 }
-//--> extend CSimpleBuffer more len and leave 1/4 free space
+//--> extend CSimpleBuffer to additional len space and leave 1/4 of total space free
 void CSimpleBuffer::Extend(uint32_t len)
 {
 	m_alloc_size = m_write_offset + len;
@@ -36,7 +36,7 @@ void CSimpleBuffer::Extend(uint32_t len)
 	uchar_t* new_buf = (uchar_t*)realloc(m_buffer, m_alloc_size);
 	m_buffer = new_buf;
 }
-//--> add len long content to CSimpleBuffer
+//--> write len long content to CSimpleBuffer
 uint32_t CSimpleBuffer::Write(void* buf, uint32_t len)
 {
 	if (m_write_offset + len > m_alloc_size)
@@ -63,6 +63,7 @@ uint32_t CSimpleBuffer::Read(void* buf, uint32_t len)
 		memcpy(buf, m_buffer, len);
 
 	m_write_offset -= len;
+	//--> move m_write_offset bytes content from m_buffer + len to m_buffer
 	memmove(m_buffer, m_buffer + len, m_write_offset);
 	return len;
 }
@@ -83,7 +84,7 @@ CByteStream::CByteStream(CSimpleBuffer* pSimpBuf, uint32_t pos)
 	m_pBuf = NULL;
 	m_len = 0;
 }
-
+//--> read from or write to buf different type data
 int16_t CByteStream::ReadInt16(uchar_t *buf)
 {
 	int16_t data = (buf[0] << 8) | buf[1];
@@ -135,7 +136,7 @@ void CByteStream::WriteUint32(uchar_t *buf, uint32_t data)
 	buf[2] = static_cast<uchar_t>((data >> 8) & 0xFF);
 	buf[3] = static_cast<uchar_t>(data & 0xFF);
 }
-
+//--> use _writebyte write input data to CByteStream
 void CByteStream::operator << (int8_t data)
 {
 	_WriteByte(&data, 1);
@@ -181,7 +182,7 @@ void CByteStream::operator << (uint32_t data)
 	buf[3] = static_cast<uchar_t>(data & 0xFF);
 	_WriteByte(buf, 4);
 }
-
+//--> use _readbyte read from CByteStream to buf and transfer buf to different type data
 void CByteStream::operator >> (int8_t& data)
 {
 	_ReadByte(&data, 1);
@@ -227,7 +228,8 @@ void CByteStream::operator >> (uint32_t& data)
 
 	data = (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
 }
-
+//--> write string content to CByteStream
+//--> first write size than content
 void CByteStream::WriteString(const char *str)
 {
 	uint32_t size = str ? (uint32_t)strlen(str) : 0;
@@ -241,12 +243,13 @@ void CByteStream::WriteString(const char *str, uint32_t len)
 	*this << len;
 	_WriteByte((void*)str, len);
 }
-
+//--> read string content from CByteStream
+//--> first read size than return char array pointer
 char* CByteStream::ReadString(uint32_t& len)
 {
 	*this >> len;
 	char* pStr = (char*)GetBuf() + GetPos();
-	Skip(len);
+	Skip(len);//--> pos + len
 	return pStr;
 }
 
@@ -263,12 +266,12 @@ uchar_t* CByteStream::ReadData(uint32_t &len)
 	Skip(len);
 	return pData;
 }
-
+//--> read len bytes data to buf from CByteStream ; update pos
 void CByteStream::_ReadByte(void* buf, uint32_t len)
 {
 	if (m_pos + len > m_len)
 	{
-		throw CPduException(ERROR_CODE_PARSE_FAILED, "parase packet failed!");
+		throw CPduException(ERROR_CODE_PARSE_FAILED, "parse packet failed!");
 	}
 
 	if (m_pSimpBuf)
