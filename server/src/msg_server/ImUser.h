@@ -19,7 +19,7 @@ class CImUser
 public:
     CImUser(string user_name);
     ~CImUser();
-    
+    //--> getter setter
     void SetUserId(uint32_t user_id) { m_user_id = user_id; }
     uint32_t GetUserId() { return m_user_id; }
     string GetLoginName() { return m_login_name; }
@@ -30,7 +30,7 @@ public:
     uint32_t GetPCLoginStatus() { return m_pc_login_status; }
     void SetPCLoginStatus(uint32_t pc_login_status) { m_pc_login_status = pc_login_status; }
     
-    
+    //--> get user conn cnt and userid in struct user_conn_t
     user_conn_t GetUserConn();
     
     bool IsMsgConnEmpty() { return m_conn_map.empty(); }
