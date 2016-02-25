@@ -9,7 +9,8 @@
 
 //static uint64_t g_send_pkt_cnt = 0;		// 发送数据包总数
 //static uint64_t g_recv_pkt_cnt = 0;		// 接收数据包总数
-//--> return the imconn pointer of given handle
+
+//--> return the imconn pointer of given handle and add ref cnt
 static CImConn* FindImConn(ConnMap_t* imconn_map, net_handle_t handle)
 {
 	CImConn* pConn = NULL;
@@ -57,7 +58,7 @@ void imconn_callback(void* callback_data, uint8_t msg, uint32_t handle, void* pP
 		break;
 	}
 
-	pConn->ReleaseRef();
+	pConn->ReleaseRef();//--> FindImConn(...)
 }
 
 //////////////////////////
