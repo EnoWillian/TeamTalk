@@ -387,7 +387,7 @@ void CRouteServConn::_HandleUsersStatusResponse(CImPdu* pPdu)
         if (user_stat.status() == IM::BaseDefine::USER_STATUS_ONLINE)
         {
             user_token->set_push_type(IM_PUSH_TYPE_SILENT);
-            log("HandleUsersStatusResponse, user id: %d, push type: normal. ", user_stat.user_id());
+            log("HandleUsersStatusResponse, user id: %d, push type: silent. ", user_stat.user_id());
         }
         else
         {
