@@ -59,7 +59,7 @@ void init_login_serv_conn(serv_info_t* server_list, uint32_t server_count, const
 	netlib_register_timer(login_server_conn_timer_callback, NULL, 1000);
 }
 
-// if there is one LoginServer available, return true
+//--> return true if there is a LoginServer available in g_login_server_list 
 bool is_login_server_available()
 {
 	CLoginServConn* pConn = NULL;
@@ -96,7 +96,7 @@ CLoginServConn::~CLoginServConn()
 {
 
 }
-
+//--> connect to loginserver and update g_login_server_conn_map
 void CLoginServConn::Connect(const char* server_ip, uint16_t server_port, uint32_t serv_idx)
 {
 	log("Connecting to LoginServer %s:%d ", server_ip, server_port);
