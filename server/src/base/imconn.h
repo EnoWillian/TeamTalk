@@ -57,7 +57,7 @@ protected:
 
 typedef hash_map<net_handle_t, CImConn*> ConnMap_t;
 typedef hash_map<uint32_t, CImConn*> UserMap_t;
-
+//--> when socket has a action	it will call this callback function	to handle msg with OnXxx()
 void imconn_callback(void* callback_data, uint8_t msg, uint32_t handle, void* pParam);
 void ReadPolicyFile();
 
