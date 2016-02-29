@@ -82,7 +82,7 @@ private:
     void _HandlePushShieldRequest(CImPdu* pPdu);
     void _HandleQueryPushShieldRequest(CImPdu* pPdu);
 private:
-    string          m_login_name;        //登录名拼音
+    string          m_login_name;
     uint32_t        m_user_id;
     bool			m_bOpen;	// only DB validate passed will be set to true;
     bool            m_bKickOff;
